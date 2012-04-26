@@ -1,8 +1,9 @@
-# Controlers
+# Controllers
 
 ## How can I handle HTTP verbs (GET, POST, ..) separately ?
 
-You can inspect request.env['REQUEST_METHOD']. Here is an example that calls different methods depending on HTTP method used :
+You can inspect request.env['REQUEST_METHOD']. Here is an example that
+calls different methods depending on HTTP method used :
 
     class Servant < Ramaze::Controller
       def index(method, *args)
