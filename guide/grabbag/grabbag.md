@@ -13,11 +13,11 @@ calls different methods depending on HTTP method used :
       end
 
       def get_me(*args)
-        "<h1>Here is #{args.join ' '}</h1><br/>"
+        "Here is #{args.join ' '}"
       end
 
       def post_me(*args)
-        "<h1>sorry, can't post you #{args.join ' '}. Postoffice is closed."
+        "Sorry, can't post you #{args.join ' '}. Postoffice is closed."
       end
     end
 
