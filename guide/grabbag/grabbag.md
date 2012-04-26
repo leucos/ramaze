@@ -2,10 +2,10 @@
 
 ## How can I handle HTTP verbs (GET, POST, ..) separately ?
 
-You can inspect request.env['REQUEST_METHOD']. Here is an example that
+You can inspect request.env['REQUEST_METHOD']. Here is a (contrived) example that
 calls different methods depending on HTTP method used :
 
-    class Servant < Ramaze::Controller
+    class Robot < Ramaze::Controller
       def index(method, *args)
          real_method = request.env['REQUEST_METHOD'].downcase
          real_method << "_"  + method.downcase
@@ -23,9 +23,9 @@ calls different methods depending on HTTP method used :
 
 This will be used like this :
 
-    $ curl http://localhost:7000/v1/mailbox/me/a/drink
+    $ curl http://localhost:7000/robot/me/a/drink
     Here is a drink
-    $ curl -d "" http://localhost:7000/v1/mailbox/me/a/letter
+    $ curl -d "" http://localhost:7000/robot/me/a/letter
     Sorry, can't post you a letter. Postoffice is closed.
 
 
