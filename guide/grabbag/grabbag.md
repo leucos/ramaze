@@ -18,6 +18,7 @@ You can inspect request.env['REQUEST_METHOD']. Here is an example that calls dif
       def post_me(*args)
         "<h1>sorry, can't post you #{args.join ' '}. Postoffice is closed."
       end
+    end
 
 This will be used like this :
 
