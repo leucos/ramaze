@@ -1,4 +1,33 @@
-# Layout and Views 
+  # Controlers
+
+  ## How can I handle HTTP verbs (GET, POST, ..) separately ?
+
+You can inspect request.env['REQUEST_METHOD']. Here is an example that calls different methods depending on HTTP method used :
+
+    class Servant < Ramaze::Controller
+      def index(method, *args)
+         real_method = request.env['REQUEST_METHOD'].downcase
+         real_method << "_"  + method.downcase
+         send(real_method, args) if self.class.method_defined?(real_method)
+      end
+
+      def get_me(*args)
+        "<h1>Here is #{args.join ' '}</h1><br/>"
+      end
+
+      def post_me(*args)
+        "<h1>sorry, can't post you #{args.join ' '}. Postoffice is closed."
+      end
+
+This will be used like this :
+
+    $ curl http://localhost:7000/v1/mailbox/me/a/drink
+    Here is a drink
+    $ curl -d "" http://localhost:7000/v1/mailbox/me/a/letter
+    Sorry, can't post you a letter. Postoffice is closed.
+
+
+# Layout and Views
 
 ## I want to add a dynamic sidebar in my layout
 
