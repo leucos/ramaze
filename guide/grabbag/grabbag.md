@@ -1,6 +1,6 @@
-  # Controlers
+# Controlers
 
-  ## How can I handle HTTP verbs (GET, POST, ..) separately ?
+## How can I handle HTTP verbs (GET, POST, ..) separately ?
 
 You can inspect request.env['REQUEST_METHOD']. Here is an example that calls different methods depending on HTTP method used :
 
