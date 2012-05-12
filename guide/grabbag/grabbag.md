@@ -1,9 +1,12 @@
+# @markup markdown
+# @title Ramaze's grabbag
+
 # Controllers
 
 ## How can I handle HTTP verbs (GET, POST, ..) separately ?
 
-You can inspect request.env['REQUEST_METHOD']. Here is a (contrived) example that
-calls different methods depending on HTTP method used :
+You can inspect `request.env['REQUEST_METHOD']`. Here is a (contrived)
+example that calls different methods depending on HTTP method used :
 
     class Robot < Ramaze::Controller
       def index(method, *args)
@@ -64,8 +67,9 @@ To activate your helper, you have to set it in at least one controller :
       helper :sidebar
       ....
 
-This way, Ramaze will take care of loading your helper class automatically.
-Then, in your layout, you just have to call you Sidebar#generate method :
+This way, Ramaze will take care of loading your helper class
+automatically. Then, in your layout, you just have to call your
+`Sidebar#generate method` :
 
     <div class="sidebar-nav">
       #{generate}
@@ -73,7 +77,9 @@ Then, in your layout, you just have to call you Sidebar#generate method :
 
 ## How can I write HTML programatically
 
-Just use {Ramaze::Gestalt}. It's a utility class that can help you writing html programatically, so you dan't have to "stuff" a String with HTML, or use _here_ documents.
+Just use {Ramaze::Gestalt}. It's a utility class that can help you
+writing html programatically, so you don't have to "stuff" a String with
+HTML, or use _here_ documents.
 
 Here is the above code, revisited with Ramaze:Gestalt
 
@@ -94,7 +100,6 @@ Here is the above code, revisited with Ramaze:Gestalt
 
 You can also use the Gestalt builder, which is a bit less verbose :
 
-
     def generate(current=nil)
       # Generate some HTML that will make the side bar
 
@@ -109,7 +114,7 @@ You can also use the Gestalt builder, which is a bit less verbose :
       end 
     end
 
-## How can I disable all layout/view rendering in a specific action ?
+## How can I bypass all layout/view rendering in a specific action ?
 
 You can use :
 
@@ -124,11 +129,12 @@ or layout.  For instance, let's say you need to display an alert box in the page
 for the following situations :
 
 * errors (oops, something went wrong)
-* informations (user notificationa bout something normal)
+* informations (user notification about something normal)
 * success (form has been handled properly)
 
-You can decide on symbols (:error, :info, :success) and check in your layout if
-flash has one of those keys set :
+You can decide on symbols (`:error`, `:info`, `:success`) and check in
+your layout if flash has one of those keys set. The example below does
+just this, and also use the key to set the CSS class for the alert box :
 
     <?r [:success, :error, :info].each do |type| ?>
 
@@ -136,7 +142,7 @@ flash has one of those keys set :
         <div class="alert alert-block alert-#{type} fade in">
           <a class="close" data-dismiss="alert" href="#">×</a>
           <h4 class="alert-heading">#{type.capitalize}</h4>
-          <p>#{flash[type].capitalize}</p>
+          <p>#{flash[type]}</p>
         </div>
       <?r end ?>
 
@@ -146,8 +152,9 @@ Then, if you set :
 
     flash[:error] = 'Invalid username'
 
-you will display an alert box containing ‘Invalid username’ (this example uses
-twitter bootstrap which brings CSS facilities to display those).
+in your controller you will display an alert box containing 'Invalid username'
+(this example uses twitter bootstrap which brings CSS facilities to display
+those).
 
 ## What steps do I have to take to add pagination to my app ?
 
@@ -162,26 +169,28 @@ For instance, if you want to add pagination to your Albums controler, just add :
       helper :paginate
       ...
 
-* make your controller method paginate the Sequel results (assuming Album is your model class) :
+* make your controller method paginate the Sequel results
+
+Assuming Album is your model class :
 
     class Albums < Ramaze::Controller
-        #...
-        def albumlist
-          @albums = paginate(Album)
-        end
+      #...
+      def albumlist
+        @albums = paginate(Album)
+      end
 
-* load the Sequel 'pagination' extension somewhere
+*  load the Sequel 'pagination' extension somewhere. model/init.rb is a
+   good place if you have one : 
 
-model/init.rb is a good place if you have one :
-
-    Sequel.extension(:pagination)
+       Sequel.extension(:pagination)
 
 * display the navigation bar in your view :
 
-    <table>
-      <!-- this is the table where you display your data -->   
-    </table>
-    <center>#{@albums.navigation}</center>
+      <table>
+
+      <!-- this is the table where you display your data -->
+      </table>
+      <center>#{@albums.navigation}</center>
 
 # Database and models
 
@@ -218,7 +227,7 @@ authentication :
     
     class User
       def self.authenticate(credentials)
-        credentials if credentials['name'] == 'manveru' && credentials['pass'] == 'foo'
+        credentials if credentials['name'] == 'manveru' && credentials['pass'] == 'sensei'
       end
     end
     
@@ -264,9 +273,9 @@ authentication :
 
 ## How set POST params in bacon tests ?
 
-    post(“/login”, 
-         ’username’ => ’manveru’,
-         ’password’ => ’pass’).status.should == 200
+    post("/login",
+         'username' => 'manveru',
+         'password' => 'sensei').status.should == 200
 
 ## How can I follow a redirect when I receive a 302 in a test ?
 
@@ -286,7 +295,7 @@ Just use follow_redirect! :
 ## Can I run a test without running the whole test suite ?
 
 Sure, assuming you require the right files in each spec file.
-For instance, you can crete a ``helper.rb`` file in ``specs/`` like this :
+For instance, you can crete a `helper.rb` file in `specs/` like this :
 
 
     require 'ramaze'
@@ -306,7 +315,7 @@ You can the execute your spec directly :
 
 ## When I run my spec directly, I have complains about helpers
 
-this is probably because your helpers are not loaded first in your
+This is probably because your helpers are not loaded first in your
 app.rb top file. Change it so the helpers are required first :
 
     require __DIR__('helper/init')
@@ -315,22 +324,22 @@ app.rb top file. Change it so the helpers are required first :
 
 ## How can I make bacon more quiet ?
 
-bacon accepts -Q to disable backtraces. 
+bacon accepts -Q to disable backtraces.
 
 If you use rake to start your tests, you can set backtrace on/off by setting an
 environment variable. You can then check for this variable in your rake task :
 
     Bacon.const_set :Backtraces, false unless ENV['BACON_MUTE'].nil?
 
-Starting you rake task like this (assuming the ‘spec’ task starts your tests) :
+Starting your rake task like this (assuming the _spec_ task starts your tests) :
 
     BACON_MUTE=1 rake spec
 
 will suppress bacon backtraces.
 
-## What does 'behaves_like' means in bacon
+## What does `behaves_like` means in bacon
 
-behaves_like basically tells bacon to use a certain configuration for the
+`behaves_like` basically tells bacon to use a certain configuration for the
 describe() block and let you use #get, #post, ... methods.
 
 ## What to return from a controller for an unacceptable operation ?
@@ -341,7 +350,7 @@ should I return a 406 , Or a 200 ?
 When writing REST service, you probably want to use 4xx codes.  But If you write
 a web application, just return a 200 and explain why it failed.
 
-You can use flash[:error] for this.
+You can use `flash[:error]` for this.
 
 [sqhooks]: http://sequel.rubyforge.org/rdoc/files/doc/model_hooks_rdoc.html
 
