@@ -1,6 +1,3 @@
-# @markup markdown
-# @title Ramaze's grabbag
-
 # Controllers
 
 ## How can I handle HTTP verbs (GET, POST, ..) separately ?
@@ -279,7 +276,7 @@ authentication :
 
 ## How can I follow a redirect when I receive a 302 in a test ?
 
-Just use follow_redirect! :
+Just use `follow_redirect!` :
 
     should 'add album for an artist' do
       post('/album/save',
@@ -291,6 +288,16 @@ Just use follow_redirect! :
       last_response['Content-Type'].should == 'text/html'
       last_response.should =~ /Album created successfully/
     end
+
+## When I use `follow_redirect!` I don't get the right page !
+
+This is probably because your controller issues a `redirect_referer`
+but the referer isn't set. so you end up on the '/' page.
+
+You can force the referer in the POST request, passing a env hash as the
+third argument :
+
+    post('/album/save', { :artist => 12 }, { HTTP_REFERER => '/album/create' }
 
 ## Can I run a test without running the whole test suite ?
 
