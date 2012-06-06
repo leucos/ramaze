@@ -118,6 +118,26 @@ You can use :
     body = "whatever"
     respond!(body, status, 'Content-Type' => 'whatever/foo')
 
+## How can I retrieve which controller/method triggered my view/layout
+rendering ?
+
+`action` contains this information. `action.node` holds the Controller
+class name, and `action.method` the Controller's method.
+However, `action.method` is not available in view and layout, so if you
+really need them, you'll have to save the value in your controller.
+
+For instance :
+
+    class Controller < Ramaze::Controller
+      before_all do
+        @caller = { :controller => action.node, 
+                    :method => action.method }
+      end
+    end
+
+Then, if your controllers inherit Controller, you'll have access to the
+@caller hash with :controller and :method entries in all your views and
+layouts.
 
 ## How do I use that flash thing to display flash messages ?
 
@@ -360,4 +380,23 @@ a web application, just return a 200 and explain why it failed.
 You can use `flash[:error]` for this.
 
 [sqhooks]: http://sequel.rubyforge.org/rdoc/files/doc/model_hooks_rdoc.html
+
+# Miscellany
+
+## Rack stuff
+
+### I want to handle a mime type specifically for a static asset
+
+Rack::Mime::MIME_TYPES is a Hash holding mime type associations. You can
+insert or change what you want in it.
+
+For instance, if you write :
+
+    Rack::Mime::MIME_TYPES['.gpx'] = 'application/octet-stream'
+
+in app.rb (for instance), static files ending with GPX will be treated
+as 'application/octet-stream' instead of the default 'text/plain'.
+
+In this particular case, it will trigger a 'download' in the browser
+instead of a in-browser display.
 
