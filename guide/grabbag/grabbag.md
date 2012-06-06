@@ -400,3 +400,78 @@ as 'application/octet-stream' instead of the default 'text/plain'.
 In this particular case, it will trigger a 'download' in the browser
 instead of a in-browser display.
 
+## Going live
+
+### How can I use multiple workers in production ?
+
+If you use thin, you can ask it to start multiple workers on different
+ports. For instance, with this config file, you'll spin up three thin
+instances on ports 5000, 5001, 5002 :
+
+    pid: tmp/pids/thin.pid
+    log: log/thin.log
+    timeout: 30
+    max_conns: 1024
+    port: 5000
+    max_persistent_conns: 512
+    environment: live
+    servers: 3
+    address: 0.0.0.0
+    daemonize: true
+
+(note : you can do the same directly at the command line with ``
+Then, start'em up with :
+
+    RACK_ENV=live thin -C thinconfig.yml start
+
+To use these instances, you need to set-up a reverse proxy.
+The best tools for this are really haproxy and nginx
+
+### I want to server my instances on port 80 with a reverse proxy but
+apache already servers this port. Am I stucked.
+
+Not at all. Apache comes with two nifty modules : mod_proxy and
+mod_proxy_balancer. So you can set-up apache as a front-end to your
+thin/unicorn workers. The configuration is quite straightforward. Create
+a VirtualHost (if needed), and add the following directives in your
+VirtualHost config filei :
+
+    RewriteEngine On
+
+    <Proxy balancer://thinservers>
+        BalancerMember http://127.0.0.1:5000
+        BalancerMember http://127.0.0.1:5001
+        BalancerMember http://127.0.0.1:5002
+    </Proxy>
+
+    # Redirect all non-static requests to thin
+    RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_FILENAME} !-f
+    RewriteRule ^/(.*)$ balancer://thinservers%{REQUEST_URI} [P,QSA,L]
+
+    ProxyPass / balancer://thinservers/
+    ProxyPassReverse / balancer://thinservers/
+    ProxyPreserveHost on
+
+    <Proxy *>
+          Order deny,allow
+          Allow from all
+    </Proxy>
+
+
+### I use multiple workers in production an authentication is not
+working
+
+Ramaze, by default, uses Ramaze::Cache::LRU, a in-memory cache, to store
+th session. Since you have multple processes serving your app, the
+session cache is not shared. You have to use a distributed cache like
+Redis or MemCached, and tell Ramaze to use it :
+
+    Ramaze::Cache.options.session = Ramaze::Cache::Redis
+
+Don't forget to spin up Redis, add `gem 'redis'` in your Gemfile, and the problem
+should be solved.
+
+The nice side effect is that authentication will persist after
+application restart, which is something that propably already annoyed
+you in development mode right ?
+
