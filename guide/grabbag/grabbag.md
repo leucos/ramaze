@@ -428,13 +428,12 @@ To use these instances, you need to set-up a reverse proxy.
 The best tools for this are really haproxy and nginx
 
 ### I want to server my instances on port 80 with a reverse proxy but
-apache already servers this port. Am I stucked.
+apache already servers this port and I don't want to use Passenger.
 
-Not at all. Apache comes with two nifty modules : mod_proxy and
-mod_proxy_balancer. So you can set-up apache as a front-end to your
-thin/unicorn workers. The configuration is quite straightforward. Create
-a VirtualHost (if needed), and add the following directives in your
-VirtualHost config filei :
+Apache comes with two nifty modules : mod_proxy and mod_proxy_balancer. So you
+can set-up apache as a front-end to your thin/unicorn workers. The configuration
+is quite straightforward. Create a VirtualHost (if needed), and add the
+following directives in your VirtualHost config filei :
 
     RewriteEngine On
 
@@ -475,3 +474,14 @@ The nice side effect is that authentication will persist after
 application restart, which is something that propably already annoyed
 you in development mode right ?
 
+### I have put code in `after` of `after_all`, but it's never called. Why ?
+
+This is probably because you used `redirect_referrer` of `redirect` in your
+method. When used, those method completely get out of execution flow and bypass
+whatever code is next.
+
+A workaround is to set `response.status` to a 30x (302, 303, ...) and add a
+Location header.
+
+    response.status = 302
+    response.headers['Location'] = 'http://somewhere.el.se'
