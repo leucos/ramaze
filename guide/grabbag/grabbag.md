@@ -196,18 +196,27 @@ Assuming Album is your model class :
         @albums = paginate(Album)
       end
 
-*  load the Sequel 'pagination' extension somewhere. model/init.rb is a
-   good place if you have one : 
+* load the Sequel 'pagination' extension somewhere
 
-       Sequel.extension(:pagination)
+`model/init.rb` is a good place to load pagination if you have one :
 
-* display the navigation bar in your view :
+    Sequel.extension(:pagination)
 
-      <table>
+* display the navigation bar in your view
 
-      <!-- this is the table where you display your data -->
-      </table>
-      <center>#{@albums.navigation}</center>
+Now you just have to iterate over `@albums` to fetch the paginated
+elements. You should also display the paginator somewhere in your page.
+
+    <table>
+    <!-- this is the table where you display your data -->
+    <?r @albums.each do |a|
+      <tr>
+        <td>#{a.name}</td><td>...</td>
+      </tr>
+    <?r end ?>
+    </table>
+
+    <center>#{@albums.navigation}</center>
 
 # Database and models
 
