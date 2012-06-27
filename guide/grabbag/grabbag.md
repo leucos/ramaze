@@ -466,6 +466,16 @@ following directives in your VirtualHost config filei :
           Allow from all
     </Proxy>
 
+If you need a fallback server that responds _only_ when other servers
+are dead, you can add a member in the `<Proxy>` directive with the
+`status=+H` option :
+
+    <Proxy balancer://thinservers>
+        BalancerMember http://127.0.0.1:5000
+        BalancerMember http://127.0.0.1:5001
+        BalancerMember http://127.0.0.1:5002
+        BalancerMember http://someserver.example.com:80 status=+H
+    </Proxy>
 
 ### I use multiple workers in production an authentication is not working
 
