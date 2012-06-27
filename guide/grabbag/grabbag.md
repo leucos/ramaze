@@ -118,8 +118,7 @@ You can use :
     body = "whatever"
     respond!(body, status, 'Content-Type' => 'whatever/foo')
 
-## How can I retrieve which controller/method triggered my view/layout
-rendering ?
+## How can I retrieve which controller/method triggered my view/layout rendering ?
 
 `action` contains this information. `action.node` holds the Controller
 class name, and `action.method` the Controller's method.
@@ -349,7 +348,7 @@ You can the execute your spec directly :
 
     ruby myspec.rb
 
-## When I run my spec directly, I have complains about helpers
+## When I run my spec directly, I have complaints about helpers
 
 This is probably because your helpers are not loaded first in your
 app.rb top file. Change it so the helpers are required first :
@@ -436,8 +435,10 @@ Then, start'em up with :
 To use these instances, you need to set-up a reverse proxy.
 The best tools for this are really haproxy and nginx
 
-### I want to server my instances on port 80 with a reverse proxy but
-apache already servers this port and I don't want to use Passenger.
+### I want to server my instances on port 80 with a reverse proxy
+
+If apache already serves this port and you don't want to use Passenger,
+you're not stuck.
 
 Apache comes with two nifty modules : mod_proxy and mod_proxy_balancer. So you
 can set-up apache as a front-end to your thin/unicorn workers. The configuration
@@ -466,8 +467,7 @@ following directives in your VirtualHost config filei :
     </Proxy>
 
 
-### I use multiple workers in production an authentication is not
-working
+### I use multiple workers in production an authentication is not working
 
 Ramaze, by default, uses Ramaze::Cache::LRU, a in-memory cache, to store
 th session. Since you have multple processes serving your app, the
