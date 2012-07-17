@@ -387,7 +387,52 @@ a web application, just return a 200 and explain why it failed.
 
 You can use `flash[:error]` for this.
 
-[sqhooks]: http://sequel.rubyforge.org/rdoc/files/doc/model_hooks_rdoc.html
+## How can I pretend a user is authenticated in my tests
+
+You can re-open the UserHelper class, and replace `#logged_in?` and
+`#user`.
+However, if you leave the class with the overrided methods, all specs
+that will run after (even in other files) will get the new
+behaviour.
+
+Thus, you have to restore the class to it's original state when you
+don't need to fake the authentication.
+
+For instance, your spec file could look like this :
+
+    # Let's override #user and #logged_in?
+    module Ramaze
+      module Helper
+        module UserHelper
+          def fake_logged_in?
+            true
+          end
+
+          def fake_user
+            User[:email=>'bonnie@example.org']
+          end
+
+          alias real_logged_in? logged_in?
+          alias logged_in? fake_logged_in?
+
+          alias real_user user
+          alias user team_user
+        end
+      end
+    end
+
+    # many specs here that require to be authenticated
+
+    # all specs are done here; we need to restore the
+    # class to it's original state
+    module Ramaze
+      module Helper
+        module UserHelper
+          alias logged_in? real_logged_in?
+          alias user real_user
+        end
+      end
+    end
 
 # Miscellany
 
@@ -407,6 +452,19 @@ as 'application/octet-stream' instead of the default 'text/plain'.
 
 In this particular case, it will trigger a 'download' in the browser
 instead of a in-browser display.
+
+### Can I mount a rack application along with a Ramaze application ?
+
+Yes, you can use `config.ru` for this.
+For instance, let's say you want to serve static files with
+Rack::Static, you can set-up a `config.ru` like this :
+
+    require ::File.expand_path('../app', __FILE__)
+
+    use Rack::Static, :urls => ["/doc"], :root => "doc"
+
+    Ramaze.start(:root => Ramaze.options.roots, :started => true)
+    run Ramaze
 
 ## Going live
 
@@ -504,3 +562,21 @@ Location header.
 
     response.status = 302
     response.headers['Location'] = 'http://somewhere.el.se'
+
+### How can I serve another directory containing static files ?
+
+You can use the solution mentionned previously (see _Can I mount a rack
+application along with a Ramaze application ?_) or go a simpler path by
+asking Ramaze to server another directory. Just append the directory to
+server to the `Ramaze.options.roots`. Static documents in the `public`
+directory within will be served by Ramaze.
+
+    # This will lookup for static files in
+    # /home/me/myapp/otherdir/public too
+    Ramaze.options.roots.push('/home/me/myapp/otherdir')
+
+You can add this code to your `app.rb` for instance.
+
+
+[sqhooks]: http://sequel.rubyforge.org/rdoc/files/doc/model_hooks_rdoc.html
+
