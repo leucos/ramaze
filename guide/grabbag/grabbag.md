@@ -236,6 +236,77 @@ Thus, before removing an artist, all it's albums will be removed.
 
 You can learn more about models hooks in the [sequel documentation][sqhooks]
 
+## I'm doing X/Y/Z in my model and it's slow
+
+Depending on what you use in your model, it might slow down your
+application quite a bit. 
+
+For instance, let's say you're writing an email account management
+application. Your users are stored in a database, but quotas for
+instance are only known by your IMAP server.
+If you cant to provide quota lookup methods in your model, you are
+forced to query your IMAP server for this :
+
+    # Lookup quota for current user on IMAP server
+    # IMAPSERVER is a constant containing an Net::IMAP
+    # object (already connected with admin credentials)
+    def quota
+      IMAPSERVER.get_quota_for(self.username).to_i
+    end
+
+This simple lookup is rather long, and will make page display crawl when
+showing several users (in a table for instance).
+
+One option, in this case, is to use Ramaze caching facilities to keep
+track of user quotas.
+
+First, configure caching, telling Ramaze which cache backend you want.
+This must be done once for all (i.e. in some config file required by
+app.rb, not in the "quota" user model method).
+
+Then, you have to tell ramaze that we want an 'imap' caching facility.
+Ramaze will create some kind of 'handle' for you that you can use
+whenever you need :
+
+    # Create an 'imap' handle for later use
+    Ramaze::Cache.options.names.push(:imap)
+    # Use Redis for all operations on 'imap' handle
+    Ramaze::Cache.options.imap = Ramaze::Cache::Redis
+
+We can nou use Ramaze::Cache.imap in our model to store or retrieve data
+from the Redis cache :
+
+
+    def quota(opts = {})
+      # :refresh => forces a quota fetch from the IMAP server (default:
+      # false)
+      # :ttl     => how long do we want the cache to hold the cached
+      # quota value (in secs, default: 1 day)
+      options = { :refresh => false,
+                  :ttl     => 86400 }.merge!(opts)
+
+      # Let's fetch the curretn cached quota for this user
+      quot = Ramaze::Cache.imap.fetch("#{self.username}.imap.quota") 
+
+      # If we are forced to refresh, or if we didn't find any cached
+      # quota for this user, let's fetch it from the real IMAP server
+      if !quot or options[:refresh]
+        quot = IMAPSERVER.get_quota_for(self.username).to_i
+        # We store the value in the cache for later use
+        Ramaze::Cache.imap.store( "#{self.username}.imap.quota",
+                                  quot,
+                                  options[:ttl])
+      end
+
+      # Return the quota
+      quot
+    end
+
+Quite easy : the quota is fetched from the real IMAP server if it's not
+in the cache. Otherwise, the cached value is returned. While this won't
+speed up the first lookup, subsequent ones will be lightning fast until
+the cached quota expires.
+
 # Authentication
 
 ## How can I add user authentication ?
@@ -434,6 +505,63 @@ For instance, your spec file could look like this :
       end
     end
 
+## How can I use Capybara for integration tests ?
+
+This has been sketched by @yorickpeterse in this [gist][capybara-gist].
+It uses selenium driver, although you just can use [what you want][capybara-drivers]
+
+    # Require Capybara stuff
+    require 'capybara'
+    require 'capybara/dsl'
+
+    Bacon.extend(Bacon::SpecDoxOutput)
+
+    # Setup capybara
+    Capybara.configure do |c|
+      # You can use alternate drivers here
+      c.default_driver = :selenium
+      c.app            = Ramaze.middleware
+      # You might want to configure this is you want to save screenshots
+      c.save_and_open_page_path = File.join(Ramaze.options.roots.first, 'tmp/')
+    end
+
+    shared :capybara do
+      Ramaze.setup_dependencies
+      extend Capybara::DSL
+    end
+
+    # Just go as ususal
+    describe 'Testing Ramaze' do
+      behaves_like :capybara
+
+      # Ensure user can see home page
+      it 'Go to the homepage' do
+        visit '/'
+        page.has_content?('Inscriptions').should == true
+      end
+
+      # Ensure user can loging on web site
+      it 'Logs in' do
+        # First, create a User in our database so we can log in
+        User.create(:email=> 'who@example.org', :password => 'xyz', :confirmed => true)
+
+        visit '/users/login'
+        fill_in 'Email', :with => 'who@example.org'
+        fill_in 'Mot de passe', :with => 'xyz'
+
+        # Let's immortalize this memorable event
+        Capybara::Screenshot.screen_shot_and_save_page
+
+        # And try to log in
+        click_button 'connect'
+
+        # After log in, we should be on the profile page
+        page.current_path.should == '/profiles/index'
+        page.has_content?('Profile').should == true
+      end
+    end
+
+
 # Miscellany
 
 ## Rack stuff
@@ -579,4 +707,5 @@ You can add this code to your `app.rb` for instance.
 
 
 [sqhooks]: http://sequel.rubyforge.org/rdoc/files/doc/model_hooks_rdoc.html
-
+[capybara-gist]: https://gist.github.com/2147355
+[capybara-drivers]: https://github.com/jnicklas/capybara/#drivers
