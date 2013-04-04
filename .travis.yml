@@ -15,7 +15,7 @@ notifications:
 branches:
   only:
     - master
-    - travis-fix
+    - travisci-fix
 
 before_script: sudo chmod 777 /dev/shm
 
