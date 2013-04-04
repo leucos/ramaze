@@ -8,8 +8,9 @@ rvm:
 
 notifications:
   email:
-    - yorickpeterse@gmail.com
-    - mf@rubyists.com
+    #    - yorickpeterse@gmail.com
+    #    - mf@rubyists.com
+    - mb@mbnet.fr
 
 branches:
   only:
