@@ -17,6 +17,6 @@ branches:
     - master
     - travisci-fix
 
-before_script: sudo chmod 777 /dev/shm
+before_script: sudo chmod -R 777 /dev/shm /var/tmp/
 
 
