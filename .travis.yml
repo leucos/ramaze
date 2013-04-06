@@ -25,3 +25,6 @@ before_script:
   - sudo chmod -R 777 /dev/shm /var/tmp/
   - ls -la /var/tmp
 
+after_failure:
+  - ls -la /var/tmp
+
