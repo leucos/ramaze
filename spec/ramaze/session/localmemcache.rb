@@ -3,6 +3,7 @@ require File.expand_path('../../../../spec/helper', __FILE__)
 spec_require 'localmemcache'
 spec_require 'sequel'
 
+
 class SpecSession < Ramaze::Controller
   map '/'
   engine :None
@@ -33,6 +34,10 @@ class SpecSession < Ramaze::Controller
 end
 
 Ramaze::Cache.options.session = Ramaze::Cache::LocalMemCache
+
+if File.exist?("/var/tmp/localmemcache/cos-pristine-session.lmc")
+  File.unlink("/var/tmp/localmemcache/cos-pristine-session.lmc") 
+end
 
 describe 'Sessions with Ramaze::Cache::LocalMemCache' do
   behaves_like :rack_test

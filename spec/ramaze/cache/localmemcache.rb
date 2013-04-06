@@ -5,6 +5,10 @@ require File.expand_path('../../../../spec/helper', __FILE__)
 
 spec_require 'localmemcache'
 
+if File.exist?("/var/tmp/localmemcache/cos-pristine-session.lmc")
+  File.unlink("/var/tmp/localmemcache/cos-pristine-session.lmc") 
+end
+
 describe Ramaze::Cache::LocalMemCache do
   Ramaze.options.cache.names = [:one, :two]
   Ramaze.options.cache.default = Ramaze::Cache::LocalMemCache
