@@ -3,6 +3,8 @@ require File.expand_path('../../../../spec/helper', __FILE__)
 spec_require 'localmemcache'
 spec_require 'sequel'
 
+require 'fileutils'
+FileUtils.rm_rf("/var/tmp/localmemcache/") if Dir.exist?("/var/tmp/localmemcache/")
 
 class SpecSession < Ramaze::Controller
   map '/'

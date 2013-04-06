@@ -5,9 +5,8 @@ require File.expand_path('../../../../spec/helper', __FILE__)
 
 spec_require 'localmemcache'
 
-if File.exist?("/var/tmp/localmemcache/cos-pristine-session.lmc")
-  File.unlink("/var/tmp/localmemcache/cos-pristine-session.lmc") 
-end
+require 'fileutils'
+FileUtils.rm_rf("/var/tmp/localmemcache/") if Dir.exist?("/var/tmp/localmemcache/")
 
 describe Ramaze::Cache::LocalMemCache do
   Ramaze.options.cache.names = [:one, :two]
