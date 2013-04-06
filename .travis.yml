@@ -26,5 +26,5 @@ before_script:
   - ls -la /var/tmp
 
 after_failure:
-  - ls -la /var/tmp
+  - ls -la /var/tmp/*/
 
